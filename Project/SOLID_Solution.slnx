@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="MoistureSensorApp/MoistureSensorApp.csproj" />
+  <Project Path="SOLID.Middleware/SOLID.Middleware.csproj" />
+  <Project Path="WaterValveApp/WaterValveApp.csproj" />
+</Solution>

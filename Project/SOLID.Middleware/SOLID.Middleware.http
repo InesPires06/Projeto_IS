@@ -1,0 +1,6 @@
+@SOLID.Middleware_HostAddress = http://localhost:5276
+
+GET {{SOLID.Middleware_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
