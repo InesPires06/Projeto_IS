@@ -1,0 +1,6 @@
+| Numero        | Nome          | Turno         | Email          | Curso
+| ------------- | ------------- | ------------- | -------------  | ------------- |
+| 2024134782    | Gabriel Nunes | PL5 (D)       | 2240698@ulo.pt | Engenharia Informática
+| 2024138504    | Inês Pires    | PL2 (D)       | 2241111@ulo.pt | Engenharia Informática
+| 2023124705    | João Farinha  | PL6 (D)       |                | Engenharia Informática
+| 2024135912    |  Simão Duarte | PL1 (D)       |                | Engenharia Informática
