@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MoistureSensorApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ab2775b03cadb870b0e3fcac75317f51ef9cfc4e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0f5d68cb9a08f043a92700c1a5d226ce9603ab6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("MoistureSensorApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MoistureSensorApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

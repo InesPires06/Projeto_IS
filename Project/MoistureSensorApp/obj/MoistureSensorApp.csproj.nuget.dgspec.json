@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gabri\\OneDrive\\Ambiente de Trabalho\\UNI\\IS\\Projeto_IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj": {}
+    "C:\\Users\\ASUS\\Desktop\\IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\gabri\\OneDrive\\Ambiente de Trabalho\\UNI\\IS\\Projeto_IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj": {
+    "C:\\Users\\ASUS\\Desktop\\IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gabri\\OneDrive\\Ambiente de Trabalho\\UNI\\IS\\Projeto_IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj",
+        "projectUniqueName": "C:\\Users\\ASUS\\Desktop\\IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj",
         "projectName": "MoistureSensorApp",
-        "projectPath": "C:\\Users\\gabri\\OneDrive\\Ambiente de Trabalho\\UNI\\IS\\Projeto_IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj",
-        "packagesPath": "C:\\Users\\gabri\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gabri\\OneDrive\\Ambiente de Trabalho\\UNI\\IS\\Projeto_IS\\Projeto_IS\\Project\\MoistureSensorApp\\obj\\",
+        "projectPath": "C:\\Users\\ASUS\\Desktop\\IS\\Projeto_IS\\Project\\MoistureSensorApp\\MoistureSensorApp.csproj",
+        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ASUS\\Desktop\\IS\\Projeto_IS\\Project\\MoistureSensorApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\gabri\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -24,7 +24,6 @@
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -39,11 +38,10 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.400"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "imports": [
             "net461",
@@ -61,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

@@ -5,6 +5,7 @@ using SOLID.Middleware.Models;
 
 namespace SOLID.Middleware.Data;
 
+
 public class SolidDatabase
 {
     private readonly string _connectionString = "Data Source=solid.db";
@@ -106,9 +107,11 @@ public class SolidDatabase
     private int? GetChannelId(SqliteConnection connection, int appId, string channelName)
     {
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = "SELECT Id FROM Channels WHERE ApplicationId = @appId AND ResourceName = @name;";
+        cmd.CommandText = @"SELECT Id
+                          FROM Channels
+                          WHERE ApplicationId = @appId AND ResourceName = @chanName;";
         cmd.Parameters.AddWithValue("@appId", appId);
-        cmd.Parameters.AddWithValue("@name", channelName);
+        cmd.Parameters.AddWithValue("@chanName", channelName);
         var result = cmd.ExecuteScalar();
         return result != null ? Convert.ToInt32(result) : null;
     }
@@ -512,5 +515,214 @@ public class SolidDatabase
         }
 
         return paths;
+    }
+
+
+    // =========================================================================
+    // DATA-RECORDS 
+    // =========================================================================
+
+    public SolidDataRecord? CreateDataRecord(string appName, string channelName, SolidDataRecord input)
+    {
+        using var conn = OpenConnection();
+        var appId = GetApplicationId(conn, appName);
+        if (appId == null) return null;
+
+        var chanId = GetChannelId(conn, appId.Value, channelName);
+        if (chanId == null) return null;
+
+        string name = string.IsNullOrWhiteSpace(input.ResourceName) ? $"dr-{Guid.NewGuid().ToString("N")[..6]}" : input.ResourceName;
+        string dt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        string contentType = input.ContentType ?? "text/plain";
+        string content = input.Content ?? "";
+
+        string sql =
+         @"INSERT INTO DataRecords (ChannelId, ResourceName, ContentType, Content, DtCreation, DtExpiration) 
+           VALUES (@chanId, @name, @type, @content, @dt, @exp)";
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@chanId", chanId.Value);
+        cmd.Parameters.AddWithValue("@name", name);
+        cmd.Parameters.AddWithValue("@type", contentType);
+        cmd.Parameters.AddWithValue("@content", content);
+        cmd.Parameters.AddWithValue("@dt", dt);
+        cmd.Parameters.AddWithValue("@exp", (object?)input.DtExpiration ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+
+        return new SolidDataRecord
+        {
+            ResType = "data-record",
+            ResourceName = name,
+            ContentType = contentType,
+            Content = content,
+            DtCreation = dt,
+            DtExpiration = input.DtExpiration
+        };
+    }
+
+    public SolidDataRecord? GetDataRecord(string appName, string channelName, string drName)
+    {
+        using var conn = OpenConnection();
+        string sql =
+        @"SELECT dr.ResourceName, dr.ContentType, dr.Content, dr.DtCreation, dr.DtExpiration 
+        FROM DataRecords dr JOIN Channels c ON dr.ChannelId = c.Id 
+        JOIN Applications a ON c.ApplicationId = a.Id 
+        WHERE a.ResourceName = @app
+         AND c.ResourceName = @chan 
+         AND dr.ResourceName = @dr";
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@app", appName);
+        cmd.Parameters.AddWithValue("@chan", channelName);
+        cmd.Parameters.AddWithValue("@dr", drName);
+        using var reader = cmd.ExecuteReader();
+        if (reader.Read())
+        {
+            return new SolidDataRecord
+            {
+                ResType = "data-record",
+                ResourceName = reader.GetString(0),
+                ContentType = reader.GetString(1),
+                Content = reader.GetString(2),
+                DtCreation = reader.GetString(3),
+                DtExpiration = reader.IsDBNull(4) ? null : reader.GetString(4)
+            };
+        }
+        return null;
+    }
+
+    public bool DeleteDataRecord(string appName, string channelName, string drName)
+    {
+        using var conn = OpenConnection();
+        var appId = GetApplicationId(conn, appName);
+        if (appId == null) return false;
+
+        var chanId = GetChannelId(conn, appId.Value, channelName);
+        if (chanId == null) return false;
+
+        string sql = @"DELETE FROM DataRecords WHERE ResourceName = @dr AND ChannelId = @chanId";
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@dr", drName);
+        cmd.Parameters.AddWithValue("@chanId", chanId.Value);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // =========================================================================
+    // SUBSCRIPTIONS
+    // =========================================================================
+
+
+    public SolidSubscription? CreateSubscription(string appName, string channelName, SolidSubscription input)
+    {
+        using var conn = OpenConnection();
+        int? appId = GetApplicationId(conn, appName);
+        if (appId == null) return null;
+
+        int? chanId = GetChannelId(conn, appId.Value, channelName);
+        if (chanId == null) return null;
+
+        string name = string.IsNullOrWhiteSpace(input.ResourceName) ? $"sub-{Guid.NewGuid().ToString("N")[..6]}" : input.ResourceName;
+        string dt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        string sql =
+        @"INSERT INTO Subscriptions (ChannelId, ResourceName, Evt, Endpoint, DtCreation, DtExpiration) 
+          VALUES (@chanId, @name, @evt, @endpoint, @dt, @exp)";
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@chanId", chanId.Value);
+        cmd.Parameters.AddWithValue("@name", name);
+        cmd.Parameters.AddWithValue("@evt", input.Evt);
+        cmd.Parameters.AddWithValue("@endpoint", input.Endpoint);
+        cmd.Parameters.AddWithValue("@dt", dt);
+        cmd.Parameters.AddWithValue("@exp", (object?)input.DtExpiration ?? DBNull.Value); cmd.ExecuteNonQuery();
+        return new SolidSubscription
+        {
+            ResType = "subscription",
+            ResourceName = name,
+            Evt = input.Evt,
+            Endpoint = input.Endpoint,
+            DtCreation = dt,
+            DtExpiration = input.DtExpiration
+        };
+    }
+
+
+    public SolidSubscription? GetSubscription(string appName, string channelName, string subName)
+    {
+        using var conn = OpenConnection();
+        string sql =
+        @"SELECT s.ResourceName, s.Evt, s.Endpoint, s.DtCreation, s.DtExpiration 
+          FROM Subscriptions s 
+          JOIN Channels c ON s.ChannelId = c.Id 
+          JOIN Applications a ON c.ApplicationId = a.Id 
+          WHERE a.ResourceName = @app AND c.ResourceName = @chan 
+          AND s.ResourceName = @sub";
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@app", appName);
+        cmd.Parameters.AddWithValue("@chan", channelName);
+        cmd.Parameters.AddWithValue("@sub", subName);
+        using var reader = cmd.ExecuteReader();
+        if (reader.Read())
+        {
+            return new SolidSubscription
+            {
+                ResType = "subscription",
+                ResourceName = reader.GetString(0),
+                Evt = reader.GetInt32(1),
+                Endpoint = reader.GetString(2),
+                DtCreation = reader.GetString(3),
+                DtExpiration = reader.IsDBNull(4) ? null : reader.GetString(4)
+            };
+        }
+        return null;
+    }
+
+    public bool DeleteSubscription(string appName, string channelName, string subName)
+    {
+        using var conn = OpenConnection();
+        int? appId = GetApplicationId(conn, appName);
+        if (appId == null) return false;
+
+        int? chanId = GetChannelId(conn, appId.Value, channelName);
+        if (chanId == null) return false;
+        
+        string sql =
+        @"DELETE FROM Subscriptions
+           WHERE ResourceName = @sub AND ChannelId = (@chanId)";
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@sub", subName);
+        cmd.Parameters.AddWithValue("@chanId", chanId.Value);    
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public List<SolidSubscription> GetActiveSubscriptions(string appName, string channelName, int evtType)
+    {
+        var list = new List<SolidSubscription>();
+        using var conn = OpenConnection();
+
+
+        string sql =
+        @"SELECT s.ResourceName, s.Evt, s.Endpoint, s.DtCreation, s.DtExpiration 
+        FROM Subscriptions s 
+        JOIN Channels c ON s.ChannelId = c.Id 
+        JOIN Applications a ON c.ApplicationId = a.Id 
+        WHERE a.ResourceName = @app 
+        AND c.ResourceName = @chan 
+        AND s.Evt = @evt";
+
+        using var cmd = new SqliteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@app", appName);
+        cmd.Parameters.AddWithValue("@chan", channelName);
+        cmd.Parameters.AddWithValue("@evt", evtType);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new SolidSubscription
+            {
+                ResType = "subscription",
+                ResourceName = reader.GetString(0),
+                Evt = reader.GetInt32(1),
+                Endpoint = reader.GetString(2),
+                DtCreation = reader.GetString(3),
+                DtExpiration = reader.IsDBNull(4) ? null : reader.GetString(4)
+            });
+        }
+        return list;
     }
 }
